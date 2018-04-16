@@ -2,9 +2,8 @@
 import os
 import jinja2
 import webapp2
-import json
 from models import Sporocilo
-from google.appengine.api import urlfetch
+
 
 template_dir = os.path.join(os.path.dirname(__file__), "templates")
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir), autoescape=False)
@@ -33,91 +32,86 @@ class MainHandler(BaseHandler):
     def get(self):
         return self.render_template("hello.html")
 
+class BlogHandler(BaseHandler):
+    def post(self):
+        kar_smo_vnesli = self.request.get('vneseno_sporocilo')
+
+        params = {
+            "ime": "Robert",
+            "sporocila":
+                [
+                    "1. prvo sporocilo",
+                    kar_smo_vnesli
+                ]
+        }
+
+        return self.render_template("blog.html", params=params)
+
+    def get(self):
+
+        params = {
+            "ime": "Robert",
+            "sporocila":
+            [
+                "1. prvo sporocilo",
+                "2. drugo sporocilo"
+            ]
+        }
+
+        return self.render_template("blog.html", params=params)
+
+class KalkulatorHandler(BaseHandler):
+    def post(self):
+        rezultat = self.request.get('vneseno_1stevilo' + 'vneseno_2stevilo')
+
+        params = {
+            [
+                rezultat
+            ]
+        }
+
+        return self.render_template("kalkulator.html", params=params)
+
+    def get(self):
+        return self.render_template("kalkulator.html")
+
+class BazaHandler(BaseHandler):
+    def post(self):
+        params = {
+        }
+
+        return self.render_template("blog.html", params=params)
+
+    def get(self):
+
+        params = {
+            "podatki_iz_baze": Sporocilo.query().fetch()
+        }
+        return self.render_template("baza.html", params=params)
 
 class VnosHandler(BaseHandler):
-    def get(self):
-        return self.render_template("vnos.html")
-
     def post(self):
-        v1 = self.request.get("vnos")
-        a1 = self.request.get("avtor")
+        tisto_kar_smo_vnseli_v_vnos = self.request.get('vnos')
+        tisto_kar_smo_vnseli_v_avtor = self.request.get('avtor')
 
-        sporocilo = Sporocilo(vnos=v1, avtor=a1)
-        sporocilo.put()
+        nov_vnos = Sporocilo(
+            vnos=tisto_kar_smo_vnseli_v_vnos,
+            avtor=tisto_kar_smo_vnseli_v_avtor
+        )
+        nov_vnos.put()
 
-        return self.redirect_to("seznam-tukaj")
+        self.redirect("/baza")
 
-
-class SeznamVnosovHandler(BaseHandler):
     def get(self):
-        seznam = Sporocilo.query().fetch()
-        params = {"seznam": seznam}
-        return self.render_template("seznam.html", params=params)
 
-class UrediVnosHandler(BaseHandler):
-    def get(self, sporocilo_id):
-        sporocilo = Sporocilo.get_by_id(int(sporocilo_id))
-
-        params = {"sporocilo": sporocilo}
-
-        return self.render_template("uredi-sporocilo.html", params=params)
-    def post(self, sporocilo_id):
-        v1 = self.request.get("vnos")
-        a1 = self.request.get("avtor")
-
-        sporocilo = Sporocilo.get_by_id(int(sporocilo_id))
-        sporocilo.avtor = a1
-        sporocilo.vnos = v1
-        sporocilo.put()
-
-        params = {"sporocilo": sporocilo}
-
-        return self.redirect_to("seznam-tukaj")
-
-class IzbrisiHandler(BaseHandler):
-    def get(self, sporocilo_id):
-        sporocilo = Sporocilo.get_by_id(int(sporocilo_id))
-
-        params = {"sporocilo": sporocilo}
-
-        return self.render_template("izbrisi-sporocilo.html", params=params)
-
-    def post(self, sporocilo_id):
-
-        sporocilo = Sporocilo.get_by_id(int(sporocilo_id))
-        sporocilo.key.delete()
-
-        return self.redirect_to("seznam-tukaj")
-
-class PodatkiHandler(BaseHandler):
-    def get(self):
-        data = open("people.json", "r").read()
-        json_data = json.loads(data)
-
-        params = {"seznam": json_data}
-
-        return self.render_template("prikazi-podatke.html", params=params)
-
-class PodatkiDrugiHandler(BaseHandler):
-    def get(self):
-        url = 'http://api.openweathermap.org/data/2.5/weather?q=Ljubljana,slo&units=metric&appid=fa7238d1f3538715243b4653439be822'
-
-        result = urlfetch.fetch(url)
-
-        json_data = json.loads(result.content)
-
-        params = {"vreme": json_data}
-
-        print(params["vreme"])
-
-        return self.render_template("prikazi-druge-podatke.html", params=params)
+        params = {
+        }
+        return self.render_template("vnos-v-bazo.html", params=params)
 
 app = webapp2.WSGIApplication([
     webapp2.Route('/', MainHandler),
-    webapp2.Route('/vnos', VnosHandler),
-    webapp2.Route('/seznam', SeznamVnosovHandler, name="seznam-tukaj"),
-    webapp2.Route('/uredi-sporocilo/<sporocilo_id:\d+>', UrediVnosHandler),
-    webapp2.Route('/izbrisi-sporocilo/<sporocilo_id:\d+>', IzbrisiHandler),
-    webapp2.Route('/prikazi-podatke', PodatkiHandler),
-    webapp2.Route('/prikazi-druge-podatke', PodatkiDrugiHandler),
+    webapp2.Route('/blog', BlogHandler),
+    webapp2.Route('/kalkulator', KalkulatorHandler),
+    webapp2.Route('/baza', BazaHandler),
+    webapp2.Route('/vnos_v_bazo', VnosHandler),
 ], debug=True)

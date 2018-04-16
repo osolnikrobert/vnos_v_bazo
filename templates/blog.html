@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block glavna_vsebina %}
+<h1>Pozdravljeni {{ ime }}</h1>
+    {% for sporocilo in sporocila %}
+        <div>
+            {{ sporocilo }}
+        </div>
+    {% endfor %}
+    <form method="post" url="">
+        Vnesi sporocilo: <input type="text" id="vneseno_sporocilo" name="vneseno_sporocilo"/>
+        <input type="submit" value="Potrdi"/>
+    </form>
+{% endblock %}

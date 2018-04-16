@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SmartNinja basic Jinja template</title>
+
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <div id="header">
+        <ol>
+            <li><a href="/">Domov</a></li>
+            <li>Prva stran</li>
+            <li><a href="/blog">Blog</a></li>
+            <li><a href="/baza">Moja prva baza</a></li>
+            <li><a href="/vnos_v_bazo">Vnos v bazo</a></li>
+        </ol>
+    </div>
+
+    {% block glavna_vsebina %}{% endblock %}
+</body>
+</html>
